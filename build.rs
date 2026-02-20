@@ -37,7 +37,12 @@ fn main() {
     fs::write(&dest_path, code).unwrap();
 
     // Tell Cargo to re-run if any prompt file changes
-    println!("cargo:rerun-if-changed=prompts/");
+    for category in &["roles", "overlays", "testing-modes"] {
+        let dir = prompts_dir.join(category);
+        for (_, path) in discover_prompts(&dir) {
+            println!("cargo:rerun-if-changed={}", path.display());
+        }
+    }
 }
 
 fn discover_prompts(dir: &Path) -> Vec<(String, PathBuf)> {

@@ -66,6 +66,7 @@ fn main() {
             Ok(prompt) => print!("{}", prompt),
             Err(e) => {
                 eprintln!("error: {}", e);
+                // Exit code 1 = unknown role/overlay. Clap uses exit code 2 for invalid arguments.
                 process::exit(1);
             }
         },

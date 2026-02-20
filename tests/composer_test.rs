@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 
-use agenticenti::composer::{compose, list_available, resolve_prompt, PromptCategory, PromptSource};
+use agenticenti::composer::{
+    compose, list_available, resolve_prompt, PromptCategory, PromptSource,
+};
 
 #[test]
 fn test_resolve_embedded_role() {

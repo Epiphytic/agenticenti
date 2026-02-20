@@ -19,12 +19,20 @@ fn main() {
     // Generate lookup functions
     code.push_str(&generate_lookup_fn("role", "roles", &prompts_dir));
     code.push_str(&generate_lookup_fn("overlay", "overlays", &prompts_dir));
-    code.push_str(&generate_lookup_fn("testing_mode", "testing-modes", &prompts_dir));
+    code.push_str(&generate_lookup_fn(
+        "testing_mode",
+        "testing-modes",
+        &prompts_dir,
+    ));
 
     // Generate name list functions
     code.push_str(&generate_names_fn("role", "roles", &prompts_dir));
     code.push_str(&generate_names_fn("overlay", "overlays", &prompts_dir));
-    code.push_str(&generate_names_fn("testing_mode", "testing-modes", &prompts_dir));
+    code.push_str(&generate_names_fn(
+        "testing_mode",
+        "testing-modes",
+        &prompts_dir,
+    ));
 
     fs::write(&dest_path, code).unwrap();
 

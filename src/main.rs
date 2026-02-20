@@ -62,20 +62,13 @@ fn main() {
             role,
             languages,
             testing_mode,
-        } => {
-            match composer::compose(
-                &role,
-                &languages,
-                testing_mode.as_deref(),
-                &config_dir,
-            ) {
-                Ok(prompt) => print!("{}", prompt),
-                Err(e) => {
-                    eprintln!("error: {}", e);
-                    process::exit(1);
-                }
+        } => match composer::compose(&role, &languages, testing_mode.as_deref(), &config_dir) {
+            Ok(prompt) => print!("{}", prompt),
+            Err(e) => {
+                eprintln!("error: {}", e);
+                process::exit(1);
             }
-        }
+        },
         Commands::List {
             roles,
             overlays,

@@ -6,10 +6,7 @@ fn agenticenti() -> Command {
 
 #[test]
 fn test_compose_single_role() {
-    let output = agenticenti()
-        .args(["compose", "coder"])
-        .output()
-        .unwrap();
+    let output = agenticenti().args(["compose", "coder"]).output().unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8(output.stdout).unwrap();
     assert!(!stdout.is_empty());
@@ -48,10 +45,7 @@ fn test_compose_unknown_role_fails() {
 
 #[test]
 fn test_list_roles() {
-    let output = agenticenti()
-        .args(["list", "--roles"])
-        .output()
-        .unwrap();
+    let output = agenticenti().args(["list", "--roles"]).output().unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8(output.stdout).unwrap();
     assert!(stdout.contains("coder"));
@@ -61,10 +55,7 @@ fn test_list_roles() {
 
 #[test]
 fn test_list_overlays() {
-    let output = agenticenti()
-        .args(["list", "--overlays"])
-        .output()
-        .unwrap();
+    let output = agenticenti().args(["list", "--overlays"]).output().unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8(output.stdout).unwrap();
     assert!(stdout.contains("rust"));
@@ -86,10 +77,7 @@ fn test_list_testing_modes() {
 
 #[test]
 fn test_list_all_default() {
-    let output = agenticenti()
-        .args(["list"])
-        .output()
-        .unwrap();
+    let output = agenticenti().args(["list"]).output().unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8(output.stdout).unwrap();
     assert!(stdout.contains("Roles:"));

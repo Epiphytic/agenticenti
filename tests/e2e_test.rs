@@ -37,7 +37,14 @@ fn e2e_compose_multi_overlay() {
 #[test]
 fn e2e_compose_tester_e2e_python_terraform() {
     let output = agenticenti()
-        .args(["compose", "tester", "python", "terraform", "--testing-mode", "e2e"])
+        .args([
+            "compose",
+            "tester",
+            "python",
+            "terraform",
+            "--testing-mode",
+            "e2e",
+        ])
         .output()
         .unwrap();
 
@@ -45,7 +52,11 @@ fn e2e_compose_tester_e2e_python_terraform() {
     let stdout = String::from_utf8(output.stdout).unwrap();
 
     let sections: Vec<&str> = stdout.split("\n\n---\n\n").collect();
-    assert_eq!(sections.len(), 4, "Expected 4 sections (role + 2 overlays + testing mode)");
+    assert_eq!(
+        sections.len(),
+        4,
+        "Expected 4 sections (role + 2 overlays + testing mode)"
+    );
 }
 
 #[test]
@@ -57,7 +68,10 @@ fn e2e_compose_evangelist_no_overlay() {
 
     assert!(output.status.success());
     let stdout = String::from_utf8(output.stdout).unwrap();
-    assert!(!stdout.contains("\n\n---\n\n"), "No separator for single section");
+    assert!(
+        !stdout.contains("\n\n---\n\n"),
+        "No separator for single section"
+    );
 }
 
 #[test]
@@ -143,10 +157,7 @@ fn e2e_user_only_role_from_config_dir() {
 
 #[test]
 fn e2e_list_shows_all_categories() {
-    let output = agenticenti()
-        .args(["list"])
-        .output()
-        .unwrap();
+    let output = agenticenti().args(["list"]).output().unwrap();
 
     assert!(output.status.success());
     let stdout = String::from_utf8(output.stdout).unwrap();
@@ -179,18 +190,12 @@ fn e2e_unknown_overlay_exits_with_error() {
 
 #[test]
 fn e2e_exit_code_zero_on_success() {
-    let output = agenticenti()
-        .args(["compose", "coder"])
-        .output()
-        .unwrap();
+    let output = agenticenti().args(["compose", "coder"]).output().unwrap();
     assert_eq!(output.status.code(), Some(0));
 }
 
 #[test]
 fn e2e_exit_code_nonzero_on_failure() {
-    let output = agenticenti()
-        .args(["compose", "fake"])
-        .output()
-        .unwrap();
+    let output = agenticenti().args(["compose", "fake"]).output().unwrap();
     assert_ne!(output.status.code(), Some(0));
 }

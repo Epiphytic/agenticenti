@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process;
 
 use clap::{Parser, Subcommand};
@@ -29,6 +29,14 @@ enum Commands {
         /// Testing mode overlay (unit or e2e) — typically used with the tester role
         #[arg(long)]
         testing_mode: Option<String>,
+
+        /// Force-enable beads appendix (overrides auto-detection)
+        #[arg(long, conflicts_with = "no_beads")]
+        beads: bool,
+
+        /// Force-disable beads appendix (overrides auto-detection)
+        #[arg(long, conflicts_with = "beads")]
+        no_beads: bool,
     },
 
     /// List available roles, overlays, or testing modes
@@ -47,6 +55,16 @@ enum Commands {
     },
 }
 
+fn detect_beads(force_on: bool, force_off: bool) -> bool {
+    if force_on {
+        return true;
+    }
+    if force_off {
+        return false;
+    }
+    Path::new(".beads").is_dir()
+}
+
 fn default_config_dir() -> PathBuf {
     std::env::var("HOME")
         .map(PathBuf::from)
@@ -63,7 +81,15 @@ fn main() {
             role,
             languages,
             testing_mode,
-        } => match composer::compose(&role, &languages, testing_mode.as_deref(), &config_dir) {
+            beads,
+            no_beads,
+        } => match composer::compose(
+            &role,
+            &languages,
+            testing_mode.as_deref(),
+            &config_dir,
+            detect_beads(beads, no_beads),
+        ) {
             Ok(prompt) => print!("{}", prompt),
             Err(e) => {
                 eprintln!("error: {}", e);

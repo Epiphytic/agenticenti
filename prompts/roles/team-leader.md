@@ -46,14 +46,10 @@ NEVER implement anything yourself. Use delegate mode.
    existing plans, research, architecture docs, and reviews. Pass these file paths to
    teammates in their prompts rather than re-explaining the work from scratch.
 
-6. **Use beads as the durable issue backbone (if available).** If the `bd` CLI or beads
-   plugin is available, use it as the persistent project-level tracker. Built-in tasks
-   are ephemeral (gone when the session ends) — beads issues survive across sessions,
-   branches, and machines via git.
-
-   **How the two layers work together:**
-   - **Beads** = durable source of truth (project roadmap, epics, multi-session work)
-   - **Built-in tasks** = real-time coordination surface (in-session agent work)
+6. **Use beads as the durable issue backbone (if available).** When beads is detected
+   (`.beads/` directory exists), the beads appendix is automatically included in
+   composed prompts — see that appendix for the full command reference and update
+   protocol. As team leader, your specific responsibilities are:
 
    **Leader workflow with beads:**
    1. At session start, run `bd ready` to find unblocked beads issues to work on.
@@ -63,14 +59,6 @@ NEVER implement anything yourself. Use delegate mode.
    5. When agents complete their work, close the beads issue: `bd close <id>`
    6. For work that can't be finished this session, add a comment with progress and leave
       the beads issue open — the next session picks up where this one left off.
-
-   **Instruct teammates to update beads regularly:**
-   - Add comments on their assigned beads issue when they hit milestones or decisions
-   - Update status when transitioning (starting, blocked, completed)
-   - Create new beads issues for follow-up work they discover during implementation
-
-   This way, even if a session crashes or context compacts, the decision history and
-   progress state are preserved in git.
 
 7. **End-to-end tests are a hard requirement.** No feature, module, or system is considered
    complete without E2E tests that prove it works as a user would experience it. This is

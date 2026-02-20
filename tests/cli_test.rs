@@ -8,16 +8,21 @@ fn agenticenti() -> Command {
 
 #[test]
 fn test_compose_single_role() {
-    let output = agenticenti().args(["compose", "coder"]).output().unwrap();
+    let output = agenticenti()
+        .args(["compose", "coder", "--no-beads"])
+        .output()
+        .unwrap();
     assert!(output.status.success());
     let stdout = String::from_utf8(output.stdout).unwrap();
     assert!(!stdout.is_empty());
+    // Should contain artifacts appendix
+    assert!(stdout.contains("Artifact Directory Structure"));
 }
 
 #[test]
 fn test_compose_role_with_overlay() {
     let output = agenticenti()
-        .args(["compose", "coder", "rust"])
+        .args(["compose", "coder", "rust", "--no-beads"])
         .output()
         .unwrap();
     assert!(output.status.success());
@@ -28,7 +33,14 @@ fn test_compose_role_with_overlay() {
 #[test]
 fn test_compose_with_testing_mode() {
     let output = agenticenti()
-        .args(["compose", "tester", "rust", "--testing-mode", "unit"])
+        .args([
+            "compose",
+            "tester",
+            "rust",
+            "--testing-mode",
+            "unit",
+            "--no-beads",
+        ])
         .output()
         .unwrap();
     assert!(output.status.success());

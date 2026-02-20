@@ -35,20 +35,24 @@ fn test_resolve_override_takes_precedence() {
 #[test]
 fn test_compose_role_only() {
     let config_dir = PathBuf::from("/nonexistent");
-    let result = compose("coder", &[], None, &config_dir);
+    let result = compose("coder", &[], None, &config_dir, false);
     assert!(result.is_ok());
     let output = result.unwrap();
     assert!(!output.is_empty());
-    assert!(!output.contains("\n\n---\n\n")); // No separator when only one piece
+    // Has separator between role and artifacts appendix
+    let separator_count = output.matches("\n\n---\n\n").count();
+    assert_eq!(separator_count, 1);
 }
 
 #[test]
 fn test_compose_role_plus_overlay() {
     let config_dir = PathBuf::from("/nonexistent");
-    let result = compose("coder", &["rust".to_string()], None, &config_dir);
+    let result = compose("coder", &["rust".to_string()], None, &config_dir, false);
     assert!(result.is_ok());
     let output = result.unwrap();
-    assert!(output.contains("\n\n---\n\n")); // Separator between pieces
+    // role + overlay + artifacts = 2 separators
+    let separator_count = output.matches("\n\n---\n\n").count();
+    assert_eq!(separator_count, 2);
 }
 
 #[test]
@@ -59,37 +63,80 @@ fn test_compose_role_plus_multiple_overlays() {
         &["rust".to_string(), "docker".to_string()],
         None,
         &config_dir,
+        false,
     );
     assert!(result.is_ok());
     let output = result.unwrap();
-    // Should have at least 2 separators (role + overlay1 + overlay2 = 2 separators)
+    // role + overlay1 + overlay2 + artifacts = 3 separators
     let separator_count = output.matches("\n\n---\n\n").count();
-    assert_eq!(separator_count, 2);
+    assert_eq!(separator_count, 3);
 }
 
 #[test]
 fn test_compose_with_testing_mode() {
     let config_dir = PathBuf::from("/nonexistent");
-    let result = compose("tester", &["rust".to_string()], Some("unit"), &config_dir);
+    let result = compose(
+        "tester",
+        &["rust".to_string()],
+        Some("unit"),
+        &config_dir,
+        false,
+    );
     assert!(result.is_ok());
     let output = result.unwrap();
-    // Should have 2 separators (role + overlay + testing mode)
+    // role + overlay + testing mode + artifacts = 3 separators
     let separator_count = output.matches("\n\n---\n\n").count();
-    assert_eq!(separator_count, 2);
+    assert_eq!(separator_count, 3);
 }
 
 #[test]
 fn test_compose_unknown_role_fails() {
     let config_dir = PathBuf::from("/nonexistent");
-    let result = compose("nonexistent", &[], None, &config_dir);
+    let result = compose("nonexistent", &[], None, &config_dir, false);
     assert!(result.is_err());
 }
 
 #[test]
 fn test_compose_unknown_overlay_fails() {
     let config_dir = PathBuf::from("/nonexistent");
-    let result = compose("coder", &["nonexistent".to_string()], None, &config_dir);
+    let result = compose(
+        "coder",
+        &["nonexistent".to_string()],
+        None,
+        &config_dir,
+        false,
+    );
     assert!(result.is_err());
+}
+
+#[test]
+fn test_compose_includes_artifacts_appendix() {
+    let config_dir = PathBuf::from("/nonexistent");
+    let result = compose("coder", &[], None, &config_dir, false);
+    assert!(result.is_ok());
+    let output = result.unwrap();
+    assert!(output.contains("Artifact Directory Structure"));
+}
+
+#[test]
+fn test_compose_includes_beads_when_flagged() {
+    let config_dir = PathBuf::from("/nonexistent");
+    let result = compose("coder", &[], None, &config_dir, true);
+    assert!(result.is_ok());
+    let output = result.unwrap();
+    assert!(output.contains("Beads Issue Tracking"));
+    // role + artifacts + beads = 2 separators
+    let separator_count = output.matches("\n\n---\n\n").count();
+    assert_eq!(separator_count, 2);
+}
+
+#[test]
+fn test_compose_excludes_beads_when_not_flagged() {
+    let config_dir = PathBuf::from("/nonexistent");
+    let result = compose("coder", &[], None, &config_dir, false);
+    assert!(result.is_ok());
+    let output = result.unwrap();
+    assert!(!output.contains("Beads Issue Tracking"));
 }
 
 #[test]

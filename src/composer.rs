@@ -10,6 +10,7 @@ pub enum PromptCategory {
     Role,
     Overlay,
     TestingMode,
+    Appendix,
 }
 
 impl PromptCategory {
@@ -18,6 +19,7 @@ impl PromptCategory {
             PromptCategory::Role => "roles",
             PromptCategory::Overlay => "overlays",
             PromptCategory::TestingMode => "testing-modes",
+            PromptCategory::Appendix => "appendices",
         }
     }
 
@@ -26,6 +28,7 @@ impl PromptCategory {
             PromptCategory::Role => prompts::embedded_role(name),
             PromptCategory::Overlay => prompts::embedded_overlay(name),
             PromptCategory::TestingMode => prompts::embedded_testing_mode(name),
+            PromptCategory::Appendix => prompts::embedded_appendix(name),
         }
     }
 
@@ -34,6 +37,7 @@ impl PromptCategory {
             PromptCategory::Role => prompts::all_role_names(),
             PromptCategory::Overlay => prompts::all_overlay_names(),
             PromptCategory::TestingMode => prompts::all_testing_mode_names(),
+            PromptCategory::Appendix => prompts::all_appendix_names(),
         }
     }
 }
@@ -104,13 +108,19 @@ pub fn resolve_prompt(
         })
 }
 
-/// Compose a full system prompt from a role, zero or more overlays, and an
-/// optional testing mode. Each resolved section is joined with `\n\n---\n\n`.
+/// Compose a full system prompt from a role, zero or more overlays, an
+/// optional testing mode, and automatic appendices. Each resolved section
+/// is joined with `\n\n---\n\n`.
+///
+/// The artifacts appendix is always appended. The beads appendix is appended
+/// only when `include_beads` is true (auto-detected from `.beads/` directory
+/// or forced via CLI flags).
 pub fn compose(
     role: &str,
     overlays: &[String],
     testing_mode: Option<&str>,
     config_dir: &Path,
+    include_beads: bool,
 ) -> Result<String, ComposeError> {
     let mut parts = vec![resolve_prompt(config_dir, PromptCategory::Role, role)?];
 
@@ -127,6 +137,21 @@ pub fn compose(
             config_dir,
             PromptCategory::TestingMode,
             mode,
+        )?);
+    }
+
+    // Appendices: always include artifacts, conditionally include beads
+    parts.push(resolve_prompt(
+        config_dir,
+        PromptCategory::Appendix,
+        "artifacts",
+    )?);
+
+    if include_beads {
+        parts.push(resolve_prompt(
+            config_dir,
+            PromptCategory::Appendix,
+            "beads",
         )?);
     }
 

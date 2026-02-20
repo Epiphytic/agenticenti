@@ -15,6 +15,7 @@ fn main() {
     code.push_str(&generate_category(&prompts_dir, "roles"));
     code.push_str(&generate_category(&prompts_dir, "overlays"));
     code.push_str(&generate_category(&prompts_dir, "testing-modes"));
+    code.push_str(&generate_category(&prompts_dir, "appendices"));
 
     // Generate lookup functions
     code.push_str(&generate_lookup_fn("role", "roles", &prompts_dir));
@@ -24,6 +25,7 @@ fn main() {
         "testing-modes",
         &prompts_dir,
     ));
+    code.push_str(&generate_lookup_fn("appendix", "appendices", &prompts_dir));
 
     // Generate name list functions
     code.push_str(&generate_names_fn("role", "roles", &prompts_dir));
@@ -33,11 +35,12 @@ fn main() {
         "testing-modes",
         &prompts_dir,
     ));
+    code.push_str(&generate_names_fn("appendix", "appendices", &prompts_dir));
 
     fs::write(&dest_path, code).unwrap();
 
     // Tell Cargo to re-run if any prompt file changes
-    for category in &["roles", "overlays", "testing-modes"] {
+    for category in &["roles", "overlays", "testing-modes", "appendices"] {
         let dir = prompts_dir.join(category);
         for (_, path) in discover_prompts(&dir) {
             println!("cargo:rerun-if-changed={}", path.display());

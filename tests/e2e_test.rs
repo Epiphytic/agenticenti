@@ -10,22 +10,26 @@ fn agenticenti() -> Command {
 #[test]
 fn e2e_compose_coder_rust_produces_valid_sections() {
     let output = agenticenti()
-        .args(["compose", "coder", "rust"])
+        .args(["compose", "coder", "rust", "--no-beads"])
         .output()
         .unwrap();
 
     assert!(output.status.success());
     let stdout = String::from_utf8(output.stdout).unwrap();
 
-    // Verify structure: role section, separator, overlay section
+    // Verify structure: role + overlay + artifacts appendix
     let sections: Vec<&str> = stdout.split("\n\n---\n\n").collect();
-    assert_eq!(sections.len(), 2, "Expected 2 sections (role + overlay)");
+    assert_eq!(
+        sections.len(),
+        3,
+        "Expected 3 sections (role + overlay + artifacts)"
+    );
 }
 
 #[test]
 fn e2e_compose_multi_overlay() {
     let output = agenticenti()
-        .args(["compose", "coder", "rust", "docker"])
+        .args(["compose", "coder", "rust", "docker", "--no-beads"])
         .output()
         .unwrap();
 
@@ -33,7 +37,11 @@ fn e2e_compose_multi_overlay() {
     let stdout = String::from_utf8(output.stdout).unwrap();
 
     let sections: Vec<&str> = stdout.split("\n\n---\n\n").collect();
-    assert_eq!(sections.len(), 3, "Expected 3 sections (role + 2 overlays)");
+    assert_eq!(
+        sections.len(),
+        4,
+        "Expected 4 sections (role + 2 overlays + artifacts)"
+    );
 }
 
 #[test]
@@ -46,6 +54,7 @@ fn e2e_compose_tester_e2e_python_terraform() {
             "terraform",
             "--testing-mode",
             "e2e",
+            "--no-beads",
         ])
         .output()
         .unwrap();
@@ -56,37 +65,40 @@ fn e2e_compose_tester_e2e_python_terraform() {
     let sections: Vec<&str> = stdout.split("\n\n---\n\n").collect();
     assert_eq!(
         sections.len(),
-        4,
-        "Expected 4 sections (role + 2 overlays + testing mode)"
+        5,
+        "Expected 5 sections (role + 2 overlays + testing mode + artifacts)"
     );
 }
 
 #[test]
 fn e2e_compose_evangelist_no_overlay() {
     let output = agenticenti()
-        .args(["compose", "evangelist"])
+        .args(["compose", "evangelist", "--no-beads"])
         .output()
         .unwrap();
 
     assert!(output.status.success());
     let stdout = String::from_utf8(output.stdout).unwrap();
-    assert!(
-        !stdout.contains("\n\n---\n\n"),
-        "No separator for single section"
-    );
+    // role + artifacts = 1 separator
+    let sections: Vec<&str> = stdout.split("\n\n---\n\n").collect();
+    assert_eq!(sections.len(), 2, "Expected 2 sections (role + artifacts)");
 }
 
 #[test]
 fn e2e_compose_github_actions_docker() {
     let output = agenticenti()
-        .args(["compose", "github-actions", "docker"])
+        .args(["compose", "github-actions", "docker", "--no-beads"])
         .output()
         .unwrap();
 
     assert!(output.status.success());
     let stdout = String::from_utf8(output.stdout).unwrap();
     let sections: Vec<&str> = stdout.split("\n\n---\n\n").collect();
-    assert_eq!(sections.len(), 2);
+    assert_eq!(
+        sections.len(),
+        3,
+        "Expected 3 sections (role + overlay + artifacts)"
+    );
 }
 
 #[test]
@@ -200,4 +212,66 @@ fn e2e_exit_code_zero_on_success() {
 fn e2e_exit_code_nonzero_on_failure() {
     let output = agenticenti().args(["compose", "fake"]).output().unwrap();
     assert_ne!(output.status.code(), Some(0));
+}
+
+#[test]
+fn e2e_beads_flag_includes_appendix() {
+    let output = agenticenti()
+        .args(["compose", "coder", "--beads"])
+        .output()
+        .unwrap();
+
+    assert!(output.status.success());
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    assert!(
+        stdout.contains("Beads Issue Tracking"),
+        "Expected beads appendix in output"
+    );
+    assert!(
+        stdout.contains("Artifact Directory Structure"),
+        "Expected artifacts appendix in output"
+    );
+}
+
+#[test]
+fn e2e_no_beads_flag_excludes_appendix() {
+    let output = agenticenti()
+        .args(["compose", "coder", "--no-beads"])
+        .output()
+        .unwrap();
+
+    assert!(output.status.success());
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    assert!(
+        !stdout.contains("Beads Issue Tracking"),
+        "Expected no beads appendix in output"
+    );
+    assert!(
+        stdout.contains("Artifact Directory Structure"),
+        "Expected artifacts appendix in output"
+    );
+}
+
+#[test]
+fn e2e_beads_flag_adds_extra_section() {
+    let no_beads = agenticenti()
+        .args(["compose", "coder", "rust", "--no-beads"])
+        .output()
+        .unwrap();
+    let with_beads = agenticenti()
+        .args(["compose", "coder", "rust", "--beads"])
+        .output()
+        .unwrap();
+
+    let no_beads_stdout = String::from_utf8(no_beads.stdout).unwrap();
+    let with_beads_stdout = String::from_utf8(with_beads.stdout).unwrap();
+
+    let no_beads_sections = no_beads_stdout.matches("\n\n---\n\n").count();
+    let with_beads_sections = with_beads_stdout.matches("\n\n---\n\n").count();
+
+    assert_eq!(
+        with_beads_sections,
+        no_beads_sections + 1,
+        "Beads flag should add exactly one more section"
+    );
 }

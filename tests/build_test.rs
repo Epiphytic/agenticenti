@@ -37,3 +37,22 @@ fn test_unknown_role_returns_none() {
     let content = agenticenti::generated::prompts::embedded_role("nonexistent");
     assert!(content.is_none());
 }
+
+#[test]
+fn test_embedded_appendices_exist() {
+    let appendices = agenticenti::generated::prompts::all_appendix_names();
+    assert!(appendices.contains(&"artifacts"));
+    assert!(appendices.contains(&"beads"));
+    assert_eq!(appendices.len(), 2);
+}
+
+#[test]
+fn test_appendix_content_is_not_empty() {
+    let content = agenticenti::generated::prompts::embedded_appendix("artifacts");
+    assert!(content.is_some());
+    assert!(!content.unwrap().is_empty());
+
+    let content = agenticenti::generated::prompts::embedded_appendix("beads");
+    assert!(content.is_some());
+    assert!(!content.unwrap().is_empty());
+}

@@ -48,8 +48,9 @@ enum Commands {
 }
 
 fn default_config_dir() -> PathBuf {
-    dirs::home_dir()
-        .unwrap_or_else(|| PathBuf::from("."))
+    std::env::var("HOME")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| PathBuf::from("."))
         .join(".agenticenti")
 }
 

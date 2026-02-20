@@ -1,0 +1,32 @@
+{
+  "name": "@epiphytic/agenticenti",
+  "version": "0.1.0",
+  "description": "Composable agent prompt CLI — WASM distribution",
+  "type": "module",
+  "bin": {
+    "agenticenti": "./bin/agenticenti.mjs"
+  },
+  "files": [
+    "bin/agenticenti.mjs",
+    "wasm/agenticenti.wasm"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Epiphytic/agenticenti.git",
+    "directory": "npm"
+  },
+  "license": "MIT",
+  "keywords": [
+    "agent",
+    "prompt",
+    "cli",
+    "wasm",
+    "wasi"
+  ]
+}

@@ -4,12 +4,19 @@ use std::path::Path;
 
 use crate::generated::prompts;
 
-/// Categorises the three kinds of prompt files.
+/// Categories of prompt files that can be composed together.
+///
+/// Each category maps to a subdirectory in both the embedded `prompts/`
+/// tree and the user's config directory.
 #[derive(Debug, Clone, Copy)]
 pub enum PromptCategory {
+    /// Base agent role (e.g., `coder`, `tester`, `reviewer`).
     Role,
+    /// Language or stack overlay (e.g., `rust`, `docker`, `python`).
     Overlay,
+    /// Testing methodology overlay (e.g., `unit`, `e2e`).
     TestingMode,
+    /// Automatically appended sections (e.g., `artifacts`, `beads`).
     Appendix,
 }
 
@@ -43,9 +50,14 @@ impl PromptCategory {
 }
 
 /// Metadata about a prompt that is available for composition.
+///
+/// Returned by [`list_available`] to show what prompts exist and where
+/// they come from.
 #[derive(Debug)]
 pub struct AvailablePrompt {
+    /// The prompt name (e.g., `"coder"`, `"rust"`).
     pub name: String,
+    /// Where this prompt originates from.
     pub source: PromptSource,
 }
 
@@ -61,9 +73,14 @@ pub enum PromptSource {
 }
 
 /// Error returned when a prompt cannot be resolved.
+///
+/// Contains the category and name that failed lookup, enabling
+/// actionable error messages like `"unknown roles 'nonexistent'"`.
 #[derive(Debug)]
 pub struct ComposeError {
+    /// The category directory that was searched (e.g., `"roles"`).
     pub category: String,
+    /// The prompt name that was not found.
     pub name: String,
 }
 
@@ -109,12 +126,24 @@ pub fn resolve_prompt(
 }
 
 /// Compose a full system prompt from a role, zero or more overlays, an
-/// optional testing mode, and automatic appendices. Each resolved section
-/// is joined with `\n\n---\n\n`.
+/// optional testing mode, and automatic appendices.
 ///
-/// The artifacts appendix is always appended. The beads appendix is appended
-/// only when `include_beads` is true (auto-detected from `.beads/` directory
-/// or forced via CLI flags).
+/// Each resolved section is joined with `\n\n---\n\n`. The artifacts
+/// appendix is always appended. The beads appendix is appended only when
+/// `include_beads` is true.
+///
+/// # Arguments
+///
+/// * `role` - Base role name (e.g., `"coder"`, `"tester"`).
+/// * `overlays` - Language/stack overlays to append (e.g., `["rust", "docker"]`).
+/// * `testing_mode` - Optional testing mode overlay (e.g., `Some("unit")`).
+/// * `config_dir` - Path to the user's config directory for overrides.
+/// * `include_beads` - Whether to append the beads appendix.
+///
+/// # Errors
+///
+/// Returns [`ComposeError`] if any requested role, overlay, or testing mode
+/// cannot be found in either the config directory or the embedded prompts.
 pub fn compose(
     role: &str,
     overlays: &[String],
